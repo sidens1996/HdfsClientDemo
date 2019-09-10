@@ -1,0 +1,1 @@
+an API use applicaiton demo for hdfs running in 3 virtual machines
