@@ -9,7 +9,7 @@ import java.net.URISyntaxException;
 
 /**
  * @ClassName: HdfsClient
- * @Description: TODO
+ * @Description:  api operations
  * @Author: Achilles
  * @Date: 09/09/2019  18:06
  * @Version: 1.0
@@ -43,27 +43,29 @@ public class HdfsClient {
 
 //        //6.测试重命名文件
 //        hc.testRename(fs);
-//        //todo 非根目录改名不成功
 
-        //7.测试文件详情查看
-        hc.testListFiles(fs);
+//        //7.测试文件详情查看
+//        hc.testListFiles(fs,new Path("/"));
 
+//        //8.文件和文件夹判断,即列出所给目录下的文件和文件夹
+//        hc.testListStatus(fs,new Path("/"));
 
 
     }
 
-    void printInfo(){
+    public void printInfo(){
+
         System.out.println("Hadoop操作成功完成！！");
     }
 
     public FileSystem getFileSystem() throws URISyntaxException,IOException,InterruptedException {
 
-        FileSystem fs = FileSystem.get(new URI("hdfs://master:9000"),new Configuration(),"csu");
-        return fs;
+        return FileSystem.get(new URI("hdfs://master:9000"),new Configuration(),"csu");
+
     }
 
     public void testMkdir(FileSystem fs) throws IOException {
-        fs.mkdirs(new Path("/test"));
+        fs.mkdirs(new Path("/test/"));
         fs.close();
         printInfo();
     }
@@ -109,27 +111,27 @@ public class HdfsClient {
 //        fs.delete(new Path("/user"),true);
 //        fs.copyFromLocalFile(new Path("D:\\hadoop-2.7.2\\README.txt"),new Path("/testForMkdir.txt"));
 
-        //循环列出所有目录
-        while(fs.listFiles(new Path("/"),true).hasNext()) {
-
-        }
         //执行改名操作
-        fs.rename(new Path("/test/testReanme.txt"),new Path("/test/renameDone.txt"));
+        fs.rename(new Path("/test/testRename.txt"),new Path("/test/renameDone.txt"));
         fs.rename(new Path("/testForMkdir.txt"),new Path("/renameDone.txt"));
+
+        //查看是否改名成功
+        testListFiles(fs,new Path("/"));
         //关闭文件资源
         fs.close();
         printInfo();
 
     }
 
-    public void testListFiles(FileSystem fs) throws IOException {
+    public void testListFiles(FileSystem fs,Path fp) throws IOException {
 
-        RemoteIterator<LocatedFileStatus> listFiles = fs.listFiles(new Path("/"),true);
+        RemoteIterator<LocatedFileStatus> listFiles = fs.listFiles(fp,true);
 
         while (listFiles.hasNext()) {
             LocatedFileStatus fileStatus = listFiles.next();
 
             //查看文件名称，权限，长度，块信息
+            System.out.println(fileStatus.getPath());//文件路径
             System.out.println(fileStatus.getPath().getName());//文件名称
             System.out.println(fileStatus.getPermission());//文件权限
             System.out.println(fileStatus.getLen());//文件长度
@@ -146,6 +148,22 @@ public class HdfsClient {
 
             System.out.println("-----------分割线-----------");
         }
+        fs.close();
+        printInfo();
+    }
+
+    public void testListStatus(FileSystem fs,Path path) throws IOException {
+
+        FileStatus[] listStatus = fs.listStatus(path);
+        for (FileStatus fileStatus:listStatus) {
+            if(fileStatus.isFile()) {//文件
+                System.out.println("f:"+fileStatus.getPath().getName());
+            }else {//文件夹
+                System.out.println("d:"+fileStatus.getPath().getName());
+            }
+        }
+        fs.close();
+        printInfo();
     }
 
 }
